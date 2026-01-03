@@ -14,6 +14,6 @@ export const removeFromWatchlist = async (userId, movieId) => {
 
 export const getUserWatchlist = async (userId) => {
   return await Watchlist.find({ userId })
-    .populate('movieId', 'title posterPath voteAverage releaseDate')
+    .populate('movieId')
     .sort({ addedAt: -1 });
 };

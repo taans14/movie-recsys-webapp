@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkLoggedIn = async () => {
       try {
-        const data = await axiosClient.get(`/auth/me?t=${new Date().getTime()}`);
+        const data = await axiosClient.get("/auth/me");
         setUser(data);
       } catch (error) {
         setUser(null);
