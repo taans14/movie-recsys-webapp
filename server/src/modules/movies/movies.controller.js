@@ -27,7 +27,7 @@ export const findAll = async (req, res) => {
 
 export const findOne = async (req, res) => {
   try {
-    const movie = await movieService.getMovieById(req.params.id);
+    const movie = await movieService.getMovieById(req.params.tmdb_id);
     if (!movie) return res.status(404).json({ message: 'Movie not found' });
     res.status(200).json(movie);
   } catch (error) {
@@ -40,7 +40,7 @@ export const update = async (req, res) => {
     const { error, value } = updateMovieDto.validate(req.body);
     if (error) return res.status(400).json({ message: error.details[0].message });
 
-    const updatedMovie = await movieService.updateMovie(req.params.id, value);
+    const updatedMovie = await movieService.updateMovie(req.params.tmdb_id, value);
     if (!updatedMovie) return res.status(404).json({ message: 'Movie not found' });
 
     res.status(200).json(updatedMovie);
@@ -51,7 +51,7 @@ export const update = async (req, res) => {
 
 export const remove = async (req, res) => {
   try {
-    const deleted = await movieService.deleteMovie(req.params.id);
+    const deleted = await movieService.deleteMovie(req.params.tmdb_id);
     if (!deleted) return res.status(404).json({ message: 'Movie not found' });
     res.status(200).json({ message: 'Movie deleted successfully' });
   } catch (error) {
@@ -74,5 +74,21 @@ export const getTopRated = async (req, res) => {
     res.json(movies);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+export const search = async (req, res) => {
+  try {
+    const { q } = req.query; // Get search term from query params (e.g., ?q=batman)
+    
+    if (!q) {
+      return res.status(400).json({ message: "Search query 'q' is required" });
+    }
+
+    const results = await movieService.searchMovies(q);
+    res.status(200).json(results);
+  } catch (error) {
+    console.error("Search error:", error);
+    res.status(500).json({ message: "Internal server error during search" });
   }
 };

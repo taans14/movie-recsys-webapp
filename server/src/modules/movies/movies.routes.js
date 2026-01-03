@@ -3,13 +3,15 @@ import * as movieController from './movies.controller.js';
 
 const router = express.Router();
 
+router.get('/search', movieController.search);
+
 router.get('/trending', movieController.getTrending);
 router.get('/top-rated', movieController.getTopRated);
 
 router.post('/', movieController.create);
 router.get('/', movieController.findAll);
-router.get('/:id', movieController.findOne);
-router.put('/:id', movieController.update);
-router.delete('/:id', movieController.remove);
+router.get('/:tmdb_id', movieController.findOne);
+router.put('/:tmdb_id', movieController.update);
+router.delete('/:tmdb_id', movieController.remove);
 
 export default router;

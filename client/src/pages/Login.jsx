@@ -59,7 +59,7 @@ const Login = () => {
             <input
               type="email"
               name="email"
-              placeholder="Email or phone number"
+              placeholder="Email"
               value={formData.email}
               onChange={handleChange}
               required
@@ -88,14 +88,6 @@ const Login = () => {
         </form>
 
         <div className="mt-6 text-gray-400 text-sm">
-          <div className="flex justify-between mb-4">
-            <label className="flex items-center cursor-pointer">
-              <input type="checkbox" className="mr-2 accent-gray-500" />
-              Remember me
-            </label>
-            <span className="hover:underline cursor-pointer">Need help?</span>
-          </div>
-          
           <div className="mt-8">
             <span className="text-gray-500">New to MovieApp? </span>
             <Link to="/signup" className="text-white hover:underline font-medium">

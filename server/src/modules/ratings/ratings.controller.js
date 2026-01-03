@@ -1,10 +1,13 @@
-import * as ratingService from './ratings.service.js';
-import createRatingDto from './dto/createRating.dto.js';
+import * as ratingService from "./ratings.service.js";
+import createRatingDto from "./dto/createRating.dto.js";
 
 export const addRating = async (req, res) => {
   try {
     const { error, value } = createRatingDto.validate(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error) {
+      console.log(error);
+      return res.status(400).json({ message: error.details[0].message });
+    }
 
     const rating = await ratingService.addRating(req.user._id, value);
     res.status(200).json(rating);

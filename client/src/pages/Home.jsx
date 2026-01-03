@@ -45,8 +45,8 @@ const Home = () => {
       <Banner />
       {searchData.length === 0 && (
         <>
-          <MovieList title='Phim Hot' data={trendingMovies} />
-          <MovieList title='Phim đề cử' data={topRatedMovies} />
+          <MovieList title='HOT' data={trendingMovies} />
+          <MovieList title='RECOMMENDED' data={topRatedMovies} />
         </>
       )}
 
