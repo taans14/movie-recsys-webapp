@@ -10,6 +10,12 @@ import SearchPage from "./pages/Search";
 import ProfilePage from "./pages/Profile";
 import RatedMoviesPage from "./pages/RatedMovies";
 import WatchlistPage from "./pages/Watchlist";
+import GenrePage from './pages/GenrePage';
+import CountryPage from './pages/CountryPage';
+import PersonPage from './pages/PersonPage';
+import TrendingPage from "./pages/TrendingPage";
+import ForYouPage from "./pages/ForYouPage";
+import TopRatedPage from "./pages/TopRatedPage";
 
 function App() {
   return (
@@ -21,11 +27,19 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/movie/:id" element={<MovieDetail />} />
-            <Route path="/search" element={<SearchPage/>} />
-            <Route path="/profile" element={<ProfilePage/>} />
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
 
-            <Route path="/profile/rated" element={<RatedMoviesPage/>} />
-            <Route path="/profile/watchlist" element={<WatchlistPage/>} />
+            <Route path="/profile/rated" element={<RatedMoviesPage />} />
+            <Route path="/profile/watchlist" element={<WatchlistPage />} />
+
+            <Route path="/genre/:genreId/:genreName" element={<GenrePage />} />
+            <Route path="/country/:countryCode/:countryName" element={<CountryPage />} />
+            <Route path="/person/:personId/:name" element={<PersonPage />} />
+
+            <Route path="/trending" element={<TrendingPage />} />
+            <Route path="/for-you" element={<ForYouPage />} />
+            <Route path="/top-rated" element={<TopRatedPage />} />
           </Routes>
         </MovieProvider>
       </AuthProvider>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
 import { useAuth } from '../context/AuthContext';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -13,6 +14,8 @@ const Login = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useDocumentTitle('Login');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -43,6 +46,19 @@ const Login = () => {
 
   return (
     <div className="min-h-screen w-full bg-black relative flex items-center justify-center bg-cover bg-center" style={{ backgroundImage: "url('https://assets.nflxext.com/ffe/siteui/vlv3/f841d4c7-10e1-40af-bcae-07a3f8dc141a/f6d7434e-d6de-4185-a6d4-c77a2d08737b/US-en-20220502-popsignuptwoweeks-perspective_alpha_website_medium.jpg')" }}>
+
+      {/* --- ADDED: Back to Home Link (Top Left) --- */}
+      <Link
+        to="/"
+        className="absolute top-6 left-6 z-50 flex items-center gap-2 text-white hover:text-red-600 transition duration-300 font-medium"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+        Back to Home
+      </Link>
+      {/* ------------------------------------------- */}
+
       <div className="absolute inset-0 bg-black/60 z-0"></div>
 
       <div className="relative z-10 w-full max-w-md bg-black/75 p-8 rounded-lg border border-gray-800 shadow-2xl">

@@ -4,14 +4,20 @@ import axiosClient from '../api/axiosClient';
 import { Loader2, Film } from 'lucide-react';
 import MovieCard from '../components/MovieCard';
 import Header from '../components/Header';
+import FilterBar from '../components/FilterBar'; // Import FilterBar
+
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q');
 
   const [movies, setMovies] = useState([]);
+  const [filteredMovies, setFilteredMovies] = useState([]); // State for filtered results
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  useDocumentTitle(query ? `Search: ${query}` : 'Search');
 
   useEffect(() => {
     const searchMovies = async () => {
@@ -24,6 +30,7 @@ export default function SearchPage() {
         // Handle array response directly or nested in data
         const results = Array.isArray(response) ? response : (response.data || []);
         setMovies(results);
+        setFilteredMovies(results); // Initialize filtered list with all results
       } catch (err) {
         console.error("Search failed:", err);
         setError("An error occurred while searching.");
@@ -43,20 +50,32 @@ export default function SearchPage() {
           Search Results for: <span className="text-white italic">"{query}"</span>
         </h2>
 
+        {/* Add FilterBar component */}
+        <FilterBar
+          movies={movies}
+          onFilterChange={setFilteredMovies}
+          showGenre={true}
+          showCountry={true}
+        />
+
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <Loader2 className="w-10 h-10 animate-spin text-red-600" />
           </div>
         ) : error ? (
           <div className="text-center text-red-400 py-10">{error}</div>
-        ) : movies.length === 0 ? (
+        ) : filteredMovies.length === 0 ? (
           <div className="text-center text-gray-500 py-20 flex flex-col items-center">
             <Film className="w-16 h-16 mb-4 opacity-20" />
-            <p className="text-xl">No movies found matching your search.</p>
+            <p className="text-xl">
+              {movies.length === 0
+                ? "No movies found matching your search."
+                : "No movies match your selected filters."}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-            {movies.map((movie) => (
+            {filteredMovies.map((movie) => (
               <div key={movie._id || movie.id} className="aspect-[2/3]">
                 <MovieCard movie={movie} className="w-full h-full shadow-lg" />
               </div>

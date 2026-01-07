@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosClient from '../api/axiosClient'; 
+import axiosClient from '../api/axiosClient';
+
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -12,6 +14,8 @@ const Signup = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useDocumentTitle('Sign Up');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -50,7 +54,7 @@ const Signup = () => {
       <div className="absolute inset-0 bg-black/60 z-0"></div>
       <div className="relative z-10 w-full max-w-md p-8 bg-black/75 rounded-lg shadow-lg">
         <h2 className="text-3xl font-bold mb-6">Sign Up</h2>
-        
+
         {error && (
           <div className="bg-red-600 text-white p-3 rounded mb-4 text-sm">
             {error}
@@ -112,8 +116,8 @@ const Signup = () => {
         </form>
         <p className="mt-4 text-gray-400">
           Already have an account?{' '}
-          <span 
-            onClick={() => navigate('/login')} 
+          <span
+            onClick={() => navigate('/login')}
             className="text-white hover:underline cursor-pointer"
           >
             Sign in now.

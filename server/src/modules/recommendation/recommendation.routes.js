@@ -11,6 +11,9 @@ router.post('/similar', controller.getSimilarMovies);
 
 router.get('/trending', controller.getTrending);
 router.get('/discover', controller.getDiscovery);
+
 router.get('/metadata', controller.getMetadata);
+router.get('/genres', controller.getGenres);
+router.get('/countries', controller.getCountries);
 
 export default router;

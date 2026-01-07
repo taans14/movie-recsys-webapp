@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
 import Banner from '../components/Banner';
 import Header from '../components/Header';
 import MovieList from '../components/MovieList';
@@ -6,22 +8,21 @@ import MovieSearch from '../components/MovieSearch';
 import axiosClient from '../api/axiosClient';
 import { useAuth } from '../context/AuthContext';
 
+import useDocumentTitle from '../hooks/useDocumentTitle';
+
 const Home = () => {
   const { user } = useAuth();
-  
-  // Store all movie categories in a single state object for cleaner management
+
   const [movies, setMovies] = useState({
     trending: [],
-    topRated: [],
-    action: [],
-    comedy: [],
-    animation: [],
-    korean: [],
-    forYou: []
+    forYou: [],
+    favorites: []
   });
 
   const [searchData, setSearchData] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  useDocumentTitle('Home');
 
   const handleSearch = async (value) => {
     if (value === '') return setSearchData([]);
@@ -37,39 +38,67 @@ const Home = () => {
     const fetchHomeData = async () => {
       try {
         setLoading(true);
-
-        // Define all the fetch promises
-        // We use the new /recommendation endpoints you set up
-        const promises = [
-          axiosClient.get('/recommendation/trending?limit=20'),
-          axiosClient.get('/recommendation/discover?type=top-rated&limit=20'),
-          axiosClient.get('/recommendation/discover?type=genre&value=Action&limit=20'),
-          axiosClient.get('/recommendation/discover?type=genre&value=Comedy&limit=20'),
-          axiosClient.get('/recommendation/discover?type=genre&value=Animation&limit=20'),
-          axiosClient.get('/recommendation/discover?type=country&value=KR&limit=20'),
-        ];
-
-        // If user is logged in, add the personalized "For You" fetch
-        if (user) {
-          promises.push(axiosClient.get('/recommendation/for-you?limit=15'));
+        let genreMap = {};
+        try {
+          const genreRes = await axiosClient.get('/recommendation/genres');
+          const genreList = genreRes.data || genreRes || [];
+          genreList.forEach(g => { genreMap[g.id] = g.name; });
+        } catch (e) {
+          console.error("Failed to load genre map", e);
         }
 
-        // Execute all requests in parallel
-        const results = await Promise.all(promises);
+        const promises = [
+          axiosClient.get('/recommendation/trending?limit=20'),
+        ];
 
-        // Helper to extract data array safely (handles { success: true, data: [...] } response structure)
-        const getData = (res) => (res && res.data ? res.data : res || []);
+        if (user) {
+          promises.push(axiosClient.get('/recommendation/for-you?limit=15'));
+          if (user.favoriteGenres && user.favoriteGenres.length > 0) {
+            user.favoriteGenres.forEach(genreId => {
+              const name = genreMap[genreId];
+              if (name) {
+                promises.push(
+                  axiosClient.get(`/recommendation/discover?type=genre&value=${encodeURIComponent(name)}&limit=20`)
+                    .then(res => ({
+                      isFavorite: true,
+                      genreName: name,
+                      genreId: genreId,
+                      data: res.data || res || []
+                    }))
+                );
+              }
+            });
+          }
+        }
 
-        // Update state
+        const results = await Promise.allSettled(promises);
+        const getResult = (index) => {
+          const res = results[index];
+          return res.status === 'fulfilled' ? (res.value.data || res.value || []) : [];
+        };
+
+        const trendingData = getResult(0);
+        let forYouData = [];
+        let favoritesData = [];
+
+        if (user) {
+          if (results[1] && results[1].status === 'fulfilled') {
+            const val = results[1].value;
+            if (!val.isFavorite) {
+              forYouData = val.data || val || [];
+            }
+          }
+          results.forEach(res => {
+            if (res.status === 'fulfilled' && res.value && res.value.isFavorite) {
+              favoritesData.push(res.value);
+            }
+          });
+        }
+
         setMovies({
-          trending: getData(results[0]),
-          topRated: getData(results[1]),
-          action: getData(results[2]),
-          comedy: getData(results[3]),
-          animation: getData(results[4]),
-          korean: getData(results[5]),
-          // If user exists, 'forYou' is the last item (index 6), otherwise empty
-          forYou: user && results[6] ? getData(results[6]) : []
+          trending: trendingData,
+          forYou: forYouData,
+          favorites: favoritesData
         });
 
       } catch (error) {
@@ -85,37 +114,61 @@ const Home = () => {
   return (
     <div className='h-full bg-black text-white min-h-screen pb-10 relative'>
       <Header onSearch={handleSearch} />
-      
-      {/* Search Result View */}
+
       {searchData.length > 0 ? (
         <div className="pt-20 px-4">
-           <MovieSearch data={searchData} />
+          <MovieSearch data={searchData} />
         </div>
       ) : (
-        /* Main Home View */
         <>
           <Banner />
-          
           <div className="space-y-8 mt-6 pb-12">
-            {/* 1. Personalized Recommendations (Only for logged-in users) */}
+
+            {/* 1. Personalized Recommendations */}
             {user && movies.forYou.length > 0 && (
-              <MovieList 
-                title={`For You, ${user.fullName || 'User'}`} 
-                data={movies.forYou} 
-              />
+              <div className="relative group/section">
+                <div className="relative">
+                  <MovieList
+                    title={`For You, ${user.fullName || 'User'}`}
+                    data={movies.forYou}
+                  />
+                  <Link
+                    to="/for-you"
+                    className="absolute right-6 top-10 md:top-12 text-sm text-gray-400 hover:text-white flex items-center gap-1 z-10 bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm border border-gray-700 hover:border-red-600 transition-all"
+                  >
+                    View All <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
             )}
 
-            {/* 2. Standard Sections */}
-            <MovieList title='Trending Now' data={movies.trending} />
-            <MovieList title='Top Rated' data={movies.topRated} />
-            
-            {/* 3. Genre Based Lists */}
-            <MovieList title='Action Hits' data={movies.action} />
-            <MovieList title='Animation & Family' data={movies.animation} />
-            <MovieList title='Comedy Favorites' data={movies.comedy} />
-            
-            {/* 4. Regional Content */}
-            <MovieList title='Popular Korean Movies' data={movies.korean} />
+            {/* 2. Trending Now */}
+            <div className="relative group/section">
+              <div className="relative">
+                <MovieList title='Trending Now' data={movies.trending} />
+                <Link
+                  to="/trending"
+                  className="absolute right-6 top-10 md:top-12 text-sm text-gray-400 hover:text-white flex items-center gap-1 z-10 bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm border border-gray-700 hover:border-red-600 transition-all"
+                >
+                  View All <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+
+            {/* 3. User Favorite Genres */}
+            {user && movies.favorites.map((fav) => (
+              <div key={fav.genreId} className="relative group/section">
+                <div className="relative">
+                  <MovieList title={`${fav.genreName} Picks`} data={fav.data} />
+                  <Link
+                    to={`/genre/${fav.genreId}/${encodeURIComponent(fav.genreName)}`}
+                    className="absolute right-6 top-10 md:top-12 text-sm text-gray-400 hover:text-white flex items-center gap-1 z-10 bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm border border-gray-700 hover:border-red-600 transition-all"
+                  >
+                    View All <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+            ))}
           </div>
         </>
       )}

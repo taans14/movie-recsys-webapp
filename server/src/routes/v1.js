@@ -6,7 +6,6 @@ import ratingRoutes from '../modules/ratings/ratings.routes.js';
 import watchlistRoutes from '../modules/watchlists/watchlists.routes.js';
 import historyRoutes from "../modules/histories/histories.routes.js";
 import recommednationRoutes from "../modules/recommendation/recommendation.routes.js";
-
 import { authLimiter } from '../middlewares/rateLimit.middleware.js';
 
 const router = express.Router();

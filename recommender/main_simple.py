@@ -6,6 +6,8 @@ from typing import Optional
 from contextlib import asynccontextmanager
 import traceback
 from bson import ObjectId
+from math import ceil
+
 
 # Import as 'logic' to ensure we see the updated variables
 import hybrid_predict_final as logic
@@ -102,31 +104,69 @@ def discover_top_rated(limit: int = 20):
         raise HTTPException(500, str(e))
 
 @app.get("/discover/by-genre")
-def discover_by_genre(genre: str, limit: int = 20):
+def discover_by_genre(genre: str, page: int = 1, limit: int = 20):
     try:
-        # Optimized: Filter by voteCount > 10 to speed up sort
-        results = list(logic.movies.find({
+        skip = (page - 1) * limit
+        query = {
             "genres.name": genre,
             "voteCount": {"$gt": 10} 
-        }).sort("voteAverage", -1).limit(limit))
+        }
+
+        # 1. Get Total Count
+        total_docs = logic.movies.count_documents(query)
+        total_pages = ceil(total_docs / limit)
+
+        # 2. Get Data
+        cursor = logic.movies.find(query).sort("voteAverage", -1).skip(skip).limit(limit)
+        results = list(cursor)
         
         for r in results: r['_id'] = str(r['_id'])
-        return {"success": True, "data": results}
+        
+        # 3. Return Standard Structure
+        return {
+            "success": True, 
+            "data": results,
+            "pagination": {
+                "page": page,
+                "limit": limit,
+                "totalDocs": total_docs,
+                "totalPages": total_pages
+            }
+        }
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(500, str(e))
 
+# 2. UPDATE: discover_by_country
 @app.get("/discover/by-country")
-def discover_by_country(country: str, limit: int = 20):
+def discover_by_country(country: str, page: int = 1, limit: int = 20):
     try:
-        # Optimized: Filter by voteCount > 5 to prevent OOM crash
-        results = list(logic.movies.find({
+        skip = (page - 1) * limit
+        query = {
             "production_countries.iso_3166_1": country,
             "voteCount": {"$gt": 5}
-        }).sort("voteAverage", -1).limit(limit))
+        }
+
+        # 1. Get Total Count
+        total_docs = logic.movies.count_documents(query)
+        total_pages = ceil(total_docs / limit)
+
+        # 2. Get Data
+        cursor = logic.movies.find(query).sort("voteAverage", -1).skip(skip).limit(limit)
+        results = list(cursor)
         
         for r in results: r['_id'] = str(r['_id'])
-        return {"success": True, "data": results}
+        
+        return {
+            "success": True, 
+            "data": results,
+            "pagination": {
+                "page": page,
+                "limit": limit,
+                "totalDocs": total_docs,
+                "totalPages": total_pages
+            }
+        }
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(500, str(e))
@@ -150,3 +190,42 @@ def get_countries():
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(500, str(e))
+
+@app.get("/discover/by-person")
+def get_movies_by_person(person_id: int, page: int = 1, limit: int = 20):
+    try:
+        skip = (page - 1) * limit
+        
+        query = {
+            "$or": [
+                {"cast.id": person_id},
+                {"directors.id": person_id}
+            ]
+        }
+
+        total_docs = logic.movies.count_documents(query)
+        total_pages = ceil(total_docs / limit)
+
+        cursor = logic.movies.find(query).sort("popularity", -1).skip(skip).limit(limit)
+        results = list(cursor)
+
+        for r in results: r['_id'] = str(r['_id'])
+
+        return {
+            "success": True,
+            "data": results,
+            "pagination": {
+                "page": page,
+                "limit": limit,
+                "totalDocs": total_docs,
+                "totalPages": total_pages
+            }
+        }
+
+    except Exception as e:
+        traceback.print_exc()
+        return {
+            "success": False, 
+            "data": [], 
+            "pagination": { "page": page, "limit": limit, "totalDocs": 0, "totalPages": 0 }
+        }

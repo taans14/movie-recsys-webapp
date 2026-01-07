@@ -104,24 +104,26 @@ export const getSimilarMovies = async (req, res, next) => {
 
 export const getDiscovery = async (req, res, next) => {
   try {
-    const { type, value, limit = 20 } = req.query;
+    const { type, value, limit = 20, personId, page = 1 } = req.query; // Added page
 
-    const key = `rec:discover:${type}:${value || 'all'}:${limit}`;
+    // Include page in cache key so page 2 is cached differently than page 1
+    const identifier = value || personId || 'all';
+    const key = `rec:discover:${type}:${identifier}:${limit}:${page}`;
 
     const result = await getOrSetCache(key, async () => {
       switch (type) {
         case 'country':
-          return await recommenderService.fetchByCountry(value, limit);
+          return await recommenderService.fetchByCountry(value, page, limit);
         case 'genre':
-          return await recommenderService.fetchByGenre(value, limit);
+          return await recommenderService.fetchByGenre(value, page, limit);
+        case 'person':
+          return await recommenderService.fetchByPerson(personId, page, limit);
         case 'top-rated':
           return await recommenderService.fetchTopRated(limit);
         default:
           throw new Error("Invalid discovery type"); // Handle inside helper catch or here
       }
-    }, 60 * 60 * 24); // Cache for 24 HOURS (Static data)
-
-    if (!result) return res.status(400).json({ message: "Invalid discovery type" });
+    }, 60 * 60 * 24);
 
     res.status(200).json(result);
   } catch (error) {
@@ -152,3 +154,27 @@ export const getMetadata = async (req, res, next) => {
     next(error);
   }
 }
+
+export const getGenres = async (req, res, next) => {
+  try {
+    const key = `rec:metadata:genres`;
+    const result = await getOrSetCache(key, async () => {
+      return await recommenderService.fetchAvailableGenres();
+    }, 60 * 60 * 24 * 7); // Cache for 7 days
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCountries = async (req, res, next) => {
+  try {
+    const key = `rec:metadata:countries`;
+    const result = await getOrSetCache(key, async () => {
+      return await recommenderService.fetchAvailableCountries();
+    }, 60 * 60 * 24 * 7); // Cache for 7 days
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};

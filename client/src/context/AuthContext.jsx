@@ -7,11 +7,11 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is logged in on page load
   useEffect(() => {
     const checkLoggedIn = async () => {
       try {
-        const data = await axiosClient.get("/auth/me");
+        // Consistent endpoint for getting user info
+        const data = await axiosClient.get("/users/me");
         setUser(data);
       } catch (error) {
         setUser(null);
@@ -36,8 +36,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // --- NEW: Update Profile Function ---
+  const updateProfile = async (data) => {
+    // Calls PUT /users/me to update backend
+    const updatedUser = await axiosClient.put('/users/profile', data);
+    // Updates local state so UI reflects changes immediately
+    setUser(updatedUser);
+    return updatedUser;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateProfile }}>
       {!loading && children}
     </AuthContext.Provider>
   );

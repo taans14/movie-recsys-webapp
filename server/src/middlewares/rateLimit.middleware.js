@@ -4,7 +4,7 @@ import redis from '../config/redis.js';
 
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 10000,
   standardHeaders: true,
   legacyHeaders: false,
   store: new RedisStore({

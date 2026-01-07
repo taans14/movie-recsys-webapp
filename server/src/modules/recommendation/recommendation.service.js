@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Movie from '../movies/movies.schema.js';
 
 const RECOMMENDER_URL = process.env.RECOMMENDER_SERVICE_URL;
 
@@ -18,18 +19,37 @@ export const fetchHybridRecommendations = async (userId, tmdbId, top_n = 10) => 
   }
 };
 
-export const fetchByCountry = async (countryCode, limit = 20) => {
-  const response = await axios.get(`${RECOMMENDER_URL}/discover/by-country`, {
-    params: { country: countryCode, limit }
-  });
-  return response.data;
+export const fetchByGenre = async (genreIdOrName, page = 1, limit = 20) => {
+  try {
+    const response = await axios.get(`${RECOMMENDER_URL}/discover/by-genre`, {
+      params: {
+        genre: genreIdOrName,
+        page,
+        limit
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Recommender Service Error (Genre):', error.message);
+    return { success: false, data: [], pagination: {} };
+  }
 };
 
-export const fetchByGenre = async (genreIdOrName, limit = 20) => {
-  const response = await axios.get(`${RECOMMENDER_URL}/discover/by-genre`, {
-    params: { genre: genreIdOrName, limit }
-  });
-  return response.data;
+export const fetchByCountry = async (countryCode, page = 1, limit = 20) => {
+  try {
+    const response = await axios.get(`${RECOMMENDER_URL}/discover/by-country`, {
+      params: {
+        country: countryCode,
+        page,
+        limit
+      }
+    });
+    // Python now returns { success: true, data: [...], pagination: {...} }
+    return response.data;
+  } catch (error) {
+    console.error('Recommender Service Error (Country):', error.message);
+    return { success: false, data: [], pagination: {} };
+  }
 };
 
 export const fetchTopRated = async (limit = 20) => {
@@ -76,5 +96,21 @@ export const fetchTrendingMovies = async (timeWindow = 'week', limit = 20) => {
   } catch (error) {
     console.error('Recommender Service Error (Trending):', error.message);
     throw new Error('Failed to fetch trending movies');
+  }
+};
+
+export const fetchByPerson = async (personId, page = 1, limit = 20) => {
+  try {
+    const response = await axios.get(`${RECOMMENDER_URL}/discover/by-person`, {
+      params: {
+        person_id: personId,
+        page,
+        limit
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Recommender Service Error (Person):', error.message);
+    return { success: false, data: [], pagination: {} };
   }
 };

@@ -12,6 +12,8 @@ const getEnv = (key, defaultValue) => {
 };
 
 const IMG_URL = getEnv('VITE_IMG_URL', 'https://image.tmdb.org/t/p/w500');
+// Dark themed placeholder matching your app's bg-gray-900 (approx hex #111827)
+const PLACEHOLDER_IMG = 'https://via.placeholder.com/500x750/111827/6b7280?text=No+Poster';
 
 const MovieCard = ({ movie, className = '' }) => {
   const navigate = useNavigate();
@@ -26,17 +28,18 @@ const MovieCard = ({ movie, className = '' }) => {
     }
   };
 
-  // Handle image path logic (absolute vs relative)
+  // Handle image path logic
   const posterPath = movie.posterPath || movie.poster_path;
-  // const imageUrl = posterPath
-  //   ? (posterPath.startsWith('http') ? posterPath : `${IMG_URL}${posterPath}`)
-  //   : 'https://via.placeholder.com/200x300?text=No+Image';
-  const imageUrl = `${IMG_URL}${posterPath}`;
+
+  // Logic: If path exists, use it; otherwise, use the default placeholder
+  const imageUrl = posterPath
+    ? `${IMG_URL}${posterPath}`
+    : PLACEHOLDER_IMG;
 
   const title = movie.title || movie.originalTitle;
 
   return (
-    <div 
+    <div
       className={`relative group cursor-pointer overflow-hidden rounded-lg bg-gray-900 ${className}`}
       onClick={handleMovieClick}
     >
@@ -47,21 +50,26 @@ const MovieCard = ({ movie, className = '' }) => {
           alt={title}
           className='w-full h-full object-cover transition-transform duration-500 group-hover:scale-110'
           loading="lazy"
+          // Optional: Add an onError handler to fallback if the specific TMDB image is broken (404)
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = PLACEHOLDER_IMG;
+          }}
         />
-        
+
         {/* Hover Gradient Overlay */}
         <div className='absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
-        
+
         {/* Title Overlay (Visible on Hover/Bottom) */}
         <div className='absolute bottom-0 left-0 w-full p-3 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300'>
           <p className='text-white font-bold text-sm line-clamp-2 drop-shadow-md'>
             {title}
           </p>
-           {movie.voteAverage > 0 && (
-             <span className="text-yellow-400 text-xs font-medium mt-1 block">
-               ★ {movie.voteAverage.toFixed(1)}
-             </span>
-           )}
+          {movie.voteAverage > 0 && (
+            <span className="text-yellow-400 text-xs font-medium mt-1 block">
+              ★ {movie.voteAverage.toFixed(1)}
+            </span>
+          )}
         </div>
       </div>
     </div>
