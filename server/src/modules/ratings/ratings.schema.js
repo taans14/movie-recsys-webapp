@@ -12,7 +12,7 @@ const ratingSchema = new mongoose.Schema(
       ref: "Movie",
       required: true,
     },
-    rating: { type: Number, required: true, min: 1, max: 10 },
+    rating: { type: Number, required: true, min: 0.5, max: 5 },
   },
   {
     collection: "ratings",

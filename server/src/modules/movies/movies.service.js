@@ -37,22 +37,32 @@ export const getTopRated = async (limit = 10) => {
 export const searchMovies = async (query) => {
   if (!query) return [];
 
-  // Create a case-insensitive regular expression
-  const regex = new RegExp(query, 'i');
+  // 1. Helper to escape special regex characters (e.g., if user types "Batman+")
+  const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  // 2. Create "Fuzzy" Pattern
+  // Step A: Split query by spaces OR hyphens (e.g., "spider man" -> ["spider", "man"])
+  const words = query.trim().split(/[\s\-]+/);
+
+  // Step B: Rejoin with a pattern that matches spaces, hyphens, or nothing
+  // Result: "spider[\s\-]*man"
+  // This matches: "Spider-Man", "Spider Man", and even "Spiderman"
+  const fuzzyQuery = words.map(escapeRegex).join('[\\s\\-]*');
+
+  const regex = new RegExp(fuzzyQuery, 'i');
 
   const movies = await Movie.find({
     $or: [
       { title: regex },
       { originalTitle: regex },
       { 'keywords.name': regex },
-      // Included overview and tagline as requested, though it might return broader results
       { overview: regex },
       { tagline: regex }
     ]
   })
   .select('title originalTitle posterPath backdropPath voteAverage releaseDate id tmdbId')
-  .limit(20) // Limit to 20 results for performance
-  .sort({ popularity: -1 }); // Sort by popularity so relevant movies appear first
+  .limit(20) 
+  .sort({ popularity: -1 });
 
   return movies;
 };

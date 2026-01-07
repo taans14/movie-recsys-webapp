@@ -6,7 +6,10 @@ const updateMovieDto = Joi.object({
   tagline: Joi.string(),
   releaseDate: Joi.date().iso(),
   runtime: Joi.number(),
-  voteAverage: Joi.number().min(0).max(10),
+  
+  tmdbVoteAverage: Joi.number().min(0).max(10),
+  tmdbVoteCount: Joi.number().integer(),
+  
   posterPath: Joi.string(),
   backdropPath: Joi.string(),
   status: Joi.string()

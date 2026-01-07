@@ -140,3 +140,5 @@ vite.config.ts.timestamp-*
 
 # Custom ignore files
 data/
+ml/
+*.pkl
