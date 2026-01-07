@@ -21,6 +21,19 @@ services:
     depends_on:
       - server
 
+  recommender:
+    build: ./recommender
+    container_name: recommender_container
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./recommender:/app
+    env_file:
+      - ./recommender/.env.docker
+    depends_on:
+      - mongodb
+
   mongodb:
     image: mongodb/mongodb-community-server:8.0-ubi8
     container_name: mongodb_container
@@ -33,5 +46,15 @@ services:
     volumes:
       - mongo_data:/data/db
 
+  redis:
+    image: redis:latest
+    container_name: redis_container
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
 volumes:
   mongo_data:
+  redis_data:

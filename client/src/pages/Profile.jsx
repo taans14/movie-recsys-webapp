@@ -40,7 +40,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-black text-white pt-24 pb-10 px-4 md:px-8">
-      <Header/>
+      <Header />
       {/* Header Info */}
       <div className="container mx-auto mb-12">
         <div className="flex items-center gap-6 bg-gray-900 p-8 rounded-2xl border border-gray-800">
@@ -55,28 +55,28 @@ export default function ProfilePage() {
       </div>
 
       <div className="container mx-auto space-y-12">
-        
+
         {/* Rated Movies Section */}
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold flex items-center gap-2 text-red-500">
+            <h2 className="text-2xl font-bold flex items-center gap-2">
               <Star className="w-6 h-6 fill-current" />
               Recently Rated
             </h2>
-            <button 
+            <button
               onClick={() => navigate('/profile/rated')}
               className="flex items-center text-sm text-gray-400 hover:text-white transition group"
             >
               View All <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {ratedMovies.slice(0, 5).map(movie => (
               <div key={movie._id} className="relative">
-                <MovieCard movie={movie.movieId} className="aspect-[2/3]" />
+                <MovieCard movie={movie.movieId} />
                 <div className="absolute top-2 right-2 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded-full shadow-md">
-                   Your Rating: {movie.rating}
+                  Your Rating: {movie.rating}
                 </div>
               </div>
             ))}
@@ -89,11 +89,11 @@ export default function ProfilePage() {
         {/* Watchlist Section */}
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold flex items-center gap-2 text-blue-500">
+            <h2 className="text-2xl font-bold flex items-center gap-2">
               <Film className="w-6 h-6 fill-current" />
               Watchlist
             </h2>
-            <button 
+            <button
               onClick={() => navigate('/profile/watchlist')}
               className="flex items-center text-sm text-gray-400 hover:text-white transition group"
             >
@@ -103,7 +103,7 @@ export default function ProfilePage() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {watchlist.slice(0, 5).map(movie => (
-              <MovieCard movie={movie.movieId}/>
+              <MovieCard movie={movie.movieId} />
             ))}
             {watchlist.length === 0 && (
               <p className="text-gray-500 col-span-full italic">Your watchlist is empty.</p>

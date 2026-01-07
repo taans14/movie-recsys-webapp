@@ -12,10 +12,10 @@ const StarIcon = ({ full, half }) => {
   if (half) {
     return (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-yellow-500">
-         <defs>
+        <defs>
           <linearGradient id="halfGrad">
             <stop offset="50%" stopColor="currentColor" />
-            <stop offset="50%" stopColor="#4b5563" /> 
+            <stop offset="50%" stopColor="#4b5563" />
           </linearGradient>
         </defs>
         <path fill="url(#halfGrad)" fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
@@ -46,10 +46,10 @@ const Banner = () => {
         // Use the configured axiosClient
         // This will automatically use the API_URL and Authorization header
         const response = await axiosClient.get('/movies/trending');
-        
+
         // Handle various response structures (standard vs custom backend wrapper)
-        const results = Array.isArray(response) 
-          ? response 
+        const results = Array.isArray(response)
+          ? response
           : (response.results || response.data || []);
 
         if (results.length > 0) {
@@ -78,30 +78,30 @@ const Banner = () => {
   const getImageUrl = (path, type = 'poster') => {
     if (!path) return '';
     if (path.startsWith('http')) return path; // Already absolute
-    
+
     // Choose base URL based on type
     const baseUrl = type === 'backdrop' ? BACKDROP_URL : IMG_URL;
     return `${baseUrl}${path}`;
   };
 
   const renderStars = (voteAverage) => {
-    const score = (voteAverage || 0) / 2; 
+    const score = (voteAverage || 0) / 2;
     const stars = [];
-    
+
     for (let i = 1; i <= 5; i++) {
-        if (score >= i) {
-            stars.push(<StarIcon key={`star-${i}`} full={true} />);
-        } else if (score >= i - 0.5) {
-            stars.push(<StarIcon key={`star-${i}`} full={false} half={true} />);
-        } else {
-             stars.push(<StarIcon key={`star-${i}`} full={false} />);
-        }
+      if (score >= i) {
+        stars.push(<StarIcon key={`star-${i}`} full={true} />);
+      } else if (score >= i - 0.5) {
+        stars.push(<StarIcon key={`star-${i}`} full={false} half={true} />);
+      } else {
+        stars.push(<StarIcon key={`star-${i}`} full={false} />);
+      }
     }
     return stars;
   };
 
   const handleDotClick = (index) => {
-      setCurrentIndex(index);
+    setCurrentIndex(index);
   };
 
   const handleNavigate = (movie) => {
@@ -115,7 +115,7 @@ const Banner = () => {
   if (movies.length === 0) return null;
 
   const currentMovie = movies[currentIndex];
-  
+
   // Safely access properties (support both snake_case from TMDB and camelCase from custom API)
   const backdropPath = currentMovie.backdrop_path || currentMovie.backdropPath;
   const posterPath = currentMovie.poster_path || currentMovie.posterPath;
@@ -125,18 +125,18 @@ const Banner = () => {
   const posterUrl = getImageUrl(posterPath, 'poster');
 
   return (
-    <div 
-        className='md:h-[600px] h-[800px] w-full bg-cover bg-center bg-no-repeat relative mt-[75px] transition-all duration-700 ease-in-out'
-        style={{ 
-            backgroundImage: `url('${backgroundUrl}')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-        }}
+    <div
+      className='md:h-[600px] h-[800px] w-full bg-cover bg-center bg-no-repeat relative mt-[75px] transition-all duration-700 ease-in-out'
+      style={{
+        backgroundImage: `url('${backgroundUrl}')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
     >
       <div className='absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/30' />
-      
+
       <div className='flex flex-col md:flex-row items-center justify-between absolute md:top-1/2 top-16 -translate-x-1/2 left-1/2 md:-translate-y-1/2 w-full px-4 md:px-10 z-10'>
-        
+
         {/* Left Content */}
         <div className='md:w-[50%] w-full mb-10 md:mb-0 text-center md:text-left'>
           <div className='flex flex-col space-y-6 items-center md:items-start'>
@@ -147,21 +147,21 @@ const Banner = () => {
               <h1 className='text-[32px] md:text-[50px] font-bold text-white leading-tight drop-shadow-xl'>
                 {currentMovie.title}
               </h1>
-              
+
               <div className='flex items-center justify-center md:justify-start space-x-1'>
                 {renderStars(voteAverage)}
                 <span className='text-gray-300 ml-2 text-sm'>
-                    ({voteAverage?.toFixed(1)}/10)
+                  ({voteAverage?.toFixed(1)}/10)
                 </span>
               </div>
-              
+
               <p className='text-gray-200 line-clamp-3 md:line-clamp-4 max-w-xl text-sm md:text-lg drop-shadow-md mx-auto md:mx-0'>
                 {currentMovie.overview}
               </p>
             </div>
 
             <div className='flex items-center space-x-4'>
-              <button 
+              <button
                 onClick={() => handleNavigate(currentMovie)}
                 className='py-3 px-8 bg-gray-600/70 hover:bg-gray-600 text-white font-bold transition rounded shadow-lg backdrop-blur-sm'
               >
@@ -173,20 +173,20 @@ const Banner = () => {
 
         {/* Right Content (Poster) */}
         <div className='md:w-[40%] w-full flex items-center justify-center md:justify-end mt-6 md:mt-0 hidden md:flex'>
-          <div 
+          <div
             className='w-[200px] h-[300px] md:w-[300px] md:h-[450px] relative group cursor-pointer perspective-1000'
             onClick={() => handleNavigate(currentMovie)}
           >
             <div className="relative w-full h-full transform transition-transform duration-500 hover:scale-105 rounded-xl shadow-2xl overflow-hidden border-2 border-white/10 bg-black">
-                {/* Play button overlay removed as requested */}
-                <img
+              {/* Play button overlay removed as requested */}
+              <img
                 src={posterUrl}
                 alt={currentMovie.title}
                 className='object-cover w-full h-full'
-                // onError={(e) => {
-                //     e.target.src = 'https://via.placeholder.com/300x450?text=No+Image';
-                // }}
-                />
+              // onError={(e) => {
+              //     e.target.src = 'https://via.placeholder.com/300x450?text=No+Image';
+              // }}
+              />
             </div>
           </div>
         </div>
@@ -195,11 +195,11 @@ const Banner = () => {
       {/* Carousel Indicators */}
       <div className='absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-3 z-20'>
         {movies.map((_, index) => (
-            <button 
-                key={index}
-                onClick={() => handleDotClick(index)}
-                className={`h-2 rounded-full transition-all duration-300 ${index === currentIndex ? 'bg-red-600 w-8' : 'bg-gray-400/50 hover:bg-white w-2'}`}
-            />
+          <button
+            key={index}
+            onClick={() => handleDotClick(index)}
+            className={`h-2 rounded-full transition-all duration-300 ${index === currentIndex ? 'bg-red-600 w-8' : 'bg-gray-400/50 hover:bg-white w-2'}`}
+          />
         ))}
       </div>
     </div>

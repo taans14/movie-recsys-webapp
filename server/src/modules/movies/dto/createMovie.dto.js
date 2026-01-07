@@ -46,7 +46,14 @@ const createMovieDto = Joi.object({
   popularity: Joi.number(),
 
   posterPath: Joi.string().allow('', null),
-  backdropPath: Joi.string().allow('', null)
+  backdropPath: Joi.string().allow('', null),
+
+  production_countries: Joi.array().items(
+    Joi.object({
+        iso_3166_1: Joi.string(),
+        name: Joi.string()
+    })
+  )
 });
 
 export default createMovieDto;

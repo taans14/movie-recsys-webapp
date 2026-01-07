@@ -3,6 +3,7 @@ import cookieParser from 'cookie-parser';
 import passport from 'passport';
 
 import setupCoreMiddlewares from './middlewares/core.middleware.js';
+import { apiLimiter } from './middlewares/rateLimit.middleware.js';
 import configurePassport from './config/passport.js';
 
 import routesV1 from './routes/v1.js';
@@ -14,10 +15,10 @@ const createApp = () => {
 
   app.use(cookieParser());
   app.use(passport.initialize());
-  
+
   configurePassport(passport);
 
-  app.use('/api/v1', routesV1);
+  app.use('/api/v1', apiLimiter, routesV1);
 
   app.use((err, req, res, next) => {
     console.error(err.stack);

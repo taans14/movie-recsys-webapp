@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
 import {
   Star,
   Clock,
@@ -13,6 +12,7 @@ import {
   Check,
 } from "lucide-react";
 import Header from "../components/Header";
+import MovieList from "../components/MovieList";
 import { useAuth } from "../context/AuthContext";
 import axiosClient from "../api/axiosClient";
 
@@ -24,8 +24,6 @@ const getEnv = (key, defaultValue) => {
   }
 };
 
-const API_URL = getEnv("VITE_API_URL", "http://localhost:5000/api/v1");
-const API_KEY = getEnv("VITE_API_KEY", "");
 const IMG_URL = getEnv("VITE_IMG_URL", "https://image.tmdb.org/t/p/w500");
 const BACKDROP_URL = IMG_URL.replace("w500", "original");
 
@@ -39,12 +37,16 @@ const getYouTubeId = (url) => {
   return match && match[2].length === 11 ? match[2] : null;
 };
 
+
 export default function MovieDetail() {
   const { id } = useParams(); // Matches /movies/:id (where id is the tmdb_id)
   const { user } = useAuth();
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Recommendation State
+  const [similarMovies, setSimilarMovies] = useState([]);
 
   // Rating State
   const [userRating, setUserRating] = useState(0);
@@ -55,7 +57,7 @@ export default function MovieDetail() {
   const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [watchlistLoading, setWatchlistLoading] = useState(false);
 
-  // --- Fetch Movie Data ---
+  // --- 1. Fetch Movie Data ---
   useEffect(() => {
     const fetchMovie = async () => {
       try {
@@ -77,6 +79,7 @@ export default function MovieDetail() {
     }
   }, [id]);
 
+  // --- 2. Fetch User Interactions (Watchlist & Ratings) ---
   useEffect(() => {
     const fetchUserInteractions = async () => {
       if (!user || !movie) return;
@@ -129,7 +132,26 @@ export default function MovieDetail() {
     };
 
     fetchUserInteractions();
-  }, [user, movie]); // Re-run when user or movie loads
+  }, [user, movie, id]);
+
+  // --- 3. NEW: Fetch Recommendations ---
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      if (!id) return;
+      try {
+        const response = await axiosClient.post("/recommendation/similar", {
+          tmdbId: parseInt(id),
+          limit: 12,
+        });
+        const data = response.data || response;
+        setSimilarMovies(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to load recommendations", err);
+      }
+    };
+
+    fetchRecommendations();
+  }, [id]);
 
   // --- Handle Rating Submission ---
   const handleRate = async (value) => {
@@ -363,10 +385,9 @@ export default function MovieDetail() {
                 onClick={handleToggleWatchlist}
                 disabled={watchlistLoading}
                 className={`px-8 py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-all border 
-                  ${
-                    isInWatchlist
-                      ? "bg-green-600/20 border-green-500 text-green-400 hover:bg-green-600/30"
-                      : "bg-slate-800 border-slate-700 hover:bg-slate-700 text-white"
+                  ${isInWatchlist
+                    ? "bg-green-600/20 border-green-500 text-green-400 hover:bg-green-600/30"
+                    : "bg-slate-800 border-slate-700 hover:bg-slate-700 text-white"
                   }`}
               >
                 {watchlistLoading ? (
@@ -500,11 +521,10 @@ export default function MovieDetail() {
                     disabled={isSubmittingRating}
                   >
                     <Star
-                      className={`w-6 h-6 md:w-8 md:h-8 ${
-                        isFilled
-                          ? "text-yellow-500 fill-current"
-                          : "text-slate-700"
-                      }`}
+                      className={`w-6 h-6 md:w-8 md:h-8 ${isFilled
+                        ? "text-yellow-500 fill-current"
+                        : "text-slate-700"
+                        }`}
                     />
                   </button>
                 );
@@ -609,6 +629,17 @@ export default function MovieDetail() {
           )}
         </div>
       </div>
+
+      {/* --- RECOMMENDATIONS SECTION --- */}
+      {similarMovies.length > 0 && (
+        <div className="container mx-auto px-4 mt-8 pt-12 border-t border-slate-800">
+          <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+            <span className="w-1 h-8 bg-red-600 rounded-full"></span>
+            You Might Also Like
+          </h2>
+          <MovieList data={similarMovies} />
+        </div>
+      )}
     </div>
   );
 }
