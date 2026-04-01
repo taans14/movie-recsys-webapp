@@ -1,4 +1,4 @@
-# Movie Recommendation System — Backend
+# Movie Recommendation System
 
 A movie discovery and recommendation platform built as a small microservices stack. This repository contains:
 
